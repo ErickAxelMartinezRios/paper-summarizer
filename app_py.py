@@ -11,10 +11,17 @@ def extract_text_from_pdf(file):
 def summarize_text(text, hf_token):
     client = InferenceClient(model="facebook/bart-large-cnn", token=hf_token)
     response = client.summarization(text[:1000])
-    st.write("Raw response:", response)  # <-- Add this to debug
+    
     if isinstance(response, list) and len(response) > 0:
-        st.write("Keys in response[0]:", response[0].keys())
-    return "No summary returned."
+        # Check if 'summary_text' key exists
+        summary = response[0].get("summary_text") or response[0].get("generated_text")
+        if summary:
+            return summary
+        else:
+            return "Summary key not found in response."
+    else:
+        return "No summary returned."
+
 
 st.title("📄 Technical Paper Summarizer")
 
