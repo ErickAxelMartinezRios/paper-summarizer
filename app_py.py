@@ -10,8 +10,11 @@ def extract_text_from_pdf(file):
     return text
 
 def summarize_text(text, hf_token):
-    client = InferenceClient(token=hf_token)
-    response = client.text_generation("facebook/bart-large-cnn", text[:1000])
+    client = InferenceClient(
+        model="facebook/bart-large-cnn",
+        token=hf_token
+    )
+    response = client.text_generation(text[:1000])
     if isinstance(response, list) and len(response) > 0:
         return response[0].get("generated_text", "No summary returned.")
     else:
@@ -20,7 +23,7 @@ def summarize_text(text, hf_token):
 st.title("📄 Online Technical Paper Summarizer")
 
 hf_token = st.text_input("Enter your Hugging Face API token:", type="password")
-uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
+uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
 if uploaded_file and hf_token:
     st.info("Extracting text from PDF...")
