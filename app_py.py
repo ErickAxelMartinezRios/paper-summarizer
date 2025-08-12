@@ -14,12 +14,16 @@ def extract_text_from_pdf(file):
 # ------------ Summarize using HuggingFaceHub -------------
 def summarize_text(text, hf_token):
     client = InferenceClient(token=hf_token)
-    response = client.invoke(
+    # Use the client’s __call__ to run the model
+    response = client(
         model="facebook/bart-large-cnn",
-        inputs=text[:1000]  # truncate to avoid limits
+        inputs=text[:1000]  # limit input size
     )
-    # response is usually a dict with 'summary_text'
-    return response.get("summary_text", "No summary returned.")
+    # The response is usually a list of dicts with 'summary_text'
+    if isinstance(response, list) and len(response) > 0:
+        return response[0].get("summary_text", "No summary found.")
+    else:
+        return "No summary returned."
 
 # ------------- Streamlit UI -------------
 st.title("📄 Online Technical Paper Summarizer (Free)")
