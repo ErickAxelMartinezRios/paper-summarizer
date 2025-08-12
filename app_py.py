@@ -10,7 +10,7 @@ def extract_text_from_pdf(file):
     return text
 def summarize_text(text, hf_token):
     client = InferenceClient(model="facebook/bart-large-cnn", token=hf_token)
-    response = client.summarization(text[:1000])
+    response = client.summarization(text[:10000])
     #st.write("Raw response:", response)  # <-- Add this to debug
     #st.write("Raw response:", response.keys())
     return response.get("summary_text")
@@ -24,7 +24,7 @@ uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 if uploaded_file and hf_token:
     st.info("Extracting text from PDF...")
     paper_text = extract_text_from_pdf(uploaded_file)
-    st.write("Extracted text snippet:", paper_text[:2000])
+    #st.write("Extracted text snippet:", paper_text[:2000])
     if st.button("Generate Summary"):
         st.info("Summarizing...")
         summary = summarize_text(paper_text, hf_token)
