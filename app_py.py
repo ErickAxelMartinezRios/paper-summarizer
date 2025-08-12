@@ -11,8 +11,8 @@ def extract_text_from_pdf(file):
 def summarize_text(text, hf_token):
     client = InferenceClient(model="facebook/bart-large-cnn", token=hf_token)
     response = client.summarization(text[:1000])
-    st.write("Raw response:", response)  # <-- Add this to debug
-    st.write("Raw response:", response.keys())
+    #st.write("Raw response:", response)  # <-- Add this to debug
+    #st.write("Raw response:", response.keys())
     return response.get("summary_text")
 
 
