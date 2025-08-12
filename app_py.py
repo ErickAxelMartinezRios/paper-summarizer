@@ -2,7 +2,7 @@ import streamlit as st
 import fitz  # PyMuPDF
 from langchain import LLMChain, PromptTemplate
 from langchain_community.llms import HuggingFaceHub
-
+from huggingface_hub import InferenceClient
 # ------------ Extract text from PDF -------------
 def extract_text_from_pdf(file):
     doc = fitz.open(stream=file.read(), filetype="pdf")
@@ -13,19 +13,13 @@ def extract_text_from_pdf(file):
 
 # ------------ Summarize using HuggingFaceHub -------------
 def summarize_text(text, hf_token):
-    llm = HuggingFaceHub(
-        repo_id="facebook/bart-large-cnn",
-        task="summarization",
-        huggingfacehub_api_token=hf_token,
-        model_kwargs={"max_length": 256, "temperature": 0.0},
+    client = InferenceClient(token=hf_token)
+    # Use the bart-large-cnn model for summarization
+    response = client.text_summarization(
+        model="facebook/bart-large-cnn",
+        inputs=text[:1000]  # limit length
     )
-    prompt = PromptTemplate(
-        input_variables=["content"],
-        template="Summarize the following technical paper content clearly and concisely:\n\n{content}"
-    )
-    chain = LLMChain(llm=llm, prompt=prompt)
-    limited_text = text[:1000]  # Avoid token limit errors
-    return chain.run(content=limited_text)
+    return response[0]['summary_text']
 
 # ------------- Streamlit UI -------------
 st.title("📄 Online Technical Paper Summarizer (Free)")
