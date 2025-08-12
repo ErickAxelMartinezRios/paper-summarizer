@@ -1,9 +1,7 @@
 import streamlit as st
-import fitz  # PyMuPDF
-from langchain import LLMChain, PromptTemplate
-from langchain_community.llms import HuggingFaceHub
+import fitz
 from huggingface_hub import InferenceClient
-# ------------ Extract text from PDF -------------
+
 def extract_text_from_pdf(file):
     doc = fitz.open(stream=file.read(), filetype="pdf")
     text = ""
@@ -11,36 +9,31 @@ def extract_text_from_pdf(file):
         text += page.get_text()
     return text
 
-# ------------ Summarize using HuggingFaceHub -------------
 def summarize_text(text, hf_token):
     client = InferenceClient(token=hf_token)
-    response = client.text2text_generation(
-        model="facebook/bart-large-cnn",
-        inputs=text[:1000]  # truncate to avoid limits
+    summarization_pipeline = client.pipeline(
+        task="summarization",
+        model="facebook/bart-large-cnn"
     )
-    # response is usually a list of dicts with 'generated_text'
+    response = summarization_pipeline(text[:1000])
     if isinstance(response, list) and len(response) > 0:
-        return response[0].get("generated_text", "No summary found.")
-    return "No summary returned."
+        return response[0].get("summary_text", "No summary returned.")
+    else:
+        return "No summary returned."
 
-# ------------- Streamlit UI -------------
-st.title("📄 Online Technical Paper Summarizer (Free)")
+st.title("📄 Online Technical Paper Summarizer")
 
-hf_token = st.text_input(
-    "Enter your Hugging Face API token (get it from huggingface.co/settings/tokens):",
-    type="password"
-)
-
-uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+hf_token = st.text_input("Enter your Hugging Face API token:", type="password")
+uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
 
 if uploaded_file and hf_token:
     st.info("Extracting text from PDF...")
     paper_text = extract_text_from_pdf(uploaded_file)
 
     if st.button("Generate Summary"):
-        st.info("Summarizing... please wait.")
+        st.info("Summarizing...")
         summary = summarize_text(paper_text, hf_token)
         st.subheader("Summary")
         st.write(summary)
 elif uploaded_file and not hf_token:
-    st.warning("Please enter your Hugging Face API token to proceed.")
+    st.warning("Please enter your Hugging Face API token to continue.")
