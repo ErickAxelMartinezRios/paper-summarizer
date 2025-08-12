@@ -13,7 +13,7 @@ def summarize_text(text, hf_token):
     response = client.summarization(text[:1000])
     st.write("Raw response:", response)  # <-- Add this to debug
     st.write("Raw response:", response.keys())
-    return response[0].get("summary_text")
+    return response.get("summary_text")
 
 
 st.title("📄 Technical Paper Summarizer")
