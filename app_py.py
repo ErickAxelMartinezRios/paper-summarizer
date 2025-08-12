@@ -8,13 +8,16 @@ def extract_text_from_pdf(file):
     for page in doc:
         text += page.get_text()
     return text
-
 def summarize_text(text, hf_token):
     client = InferenceClient(model="facebook/bart-large-cnn", token=hf_token)
-    response = client.summarization(text[:2000])
-    if isinstance(response, list) and len(response) > 0:
-        return response[0].get("summary_text", "No summary returned.")
-    return "No summary returned."
+    try:
+        response = client.summarization(text[:1000])
+        if isinstance(response, list) and len(response) > 0:
+            return response[0].get("summary_text", "No summary returned.")
+        else:
+            return "No summary returned."
+    except Exception as e:
+        return f"Error during summarization: {e}"
 
 st.title("📄 Technical Paper Summarizer")
 
